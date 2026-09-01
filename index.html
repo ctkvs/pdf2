@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF → JPEG — แยกทุกหน้าเป็นภาพ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1B18;
+    --paper:#EDE9DE;
+    --paper-light:#F8F6EF;
+    --safelight:#9B3320;
+    --safelight-dim:#C7714F;
+    --film:#6E6B62;
+    --film-line:rgba(27,27,24,0.14);
+    --danger:#9B3320;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans','Noto Sans Thai',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--safelight);color:var(--paper-light);}
+
+  .wrap{max-width:960px;margin:0 auto;padding:0 28px 120px;}
+
+  header.site{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 0 22px;border-bottom:1px solid var(--film-line);
+    margin-bottom:56px;
+  }
+  .mark{display:flex;align-items:center;gap:10px;}
+  .mark svg{width:30px;height:30px;flex:none;}
+  .mark span{font-family:'Fraunces',serif;font-weight:500;font-size:19px;letter-spacing:0.01em;}
+  .mark small{display:block;font-family:'Work Sans','Noto Sans Thai',sans-serif;font-size:11px;color:var(--film);letter-spacing:0.02em;}
+  .frame-counter{font-family:'Work Sans',sans-serif;font-size:13px;color:var(--film);}
+
+  .hero{padding:8px 0 44px;}
+  .hero h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:clamp(34px,5vw,52px);
+    line-height:1.08;
+    margin:0 0 20px;
+    max-width:11.5em;
+    letter-spacing:-0.01em;
+  }
+  .hero p{
+    font-size:17px;color:#454339;max-width:34em;margin:0;
+  }
+
+  .dropzone{
+    position:relative;
+    margin-top:44px;
+    border:1.5px solid var(--ink);
+    background:var(--paper-light);
+    padding:40px 32px;
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
+    cursor:pointer;
+    transition:background 0.15s ease, border-color 0.15s ease;
+  }
+  .dropzone::before,.dropzone::after{
+    content:"";position:absolute;left:0;right:0;height:14px;
+    background-image:radial-gradient(circle,var(--paper) 4px,transparent 4.2px);
+    background-size:26px 14px;background-repeat:repeat-x;background-position:10px center;
+  }
+  .dropzone::before{top:-8px;}
+  .dropzone::after{bottom:-8px;}
+  .dropzone.drag{background:#F2E7DE;border-color:var(--safelight);}
+  .dropzone .dz-icon{width:40px;height:40px;color:var(--safelight);}
+  .dropzone h2{font-family:'Fraunces',serif;font-weight:500;font-size:20px;margin:0;}
+  .dropzone p{margin:0;font-size:14px;color:var(--film);}
+  .dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+  .filename-row{
+    display:none;align-items:center;justify-content:space-between;gap:16px;
+    margin-top:18px;padding:14px 18px;border:1px solid var(--film-line);background:var(--paper-light);
+    font-size:14px;
+  }
+  .filename-row.show{display:flex;}
+  .filename-row .fn{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .filename-row button.clear{
+    background:none;border:none;color:var(--film);cursor:pointer;font-size:13px;
+    text-decoration:underline;padding:0;
+  }
+
+  .controls{
+    display:none;margin-top:36px;gap:32px;flex-wrap:wrap;
+    padding:26px 0;border-top:1px solid var(--film-line);border-bottom:1px solid var(--film-line);
+  }
+  .controls.show{display:flex;}
+  .control{flex:1;min-width:220px;}
+  .control label{display:flex;justify-content:space-between;font-size:13px;color:var(--film);margin-bottom:10px;}
+  .control label b{color:var(--ink);font-weight:500;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:1.5px;background:var(--ink);
+    outline:none;margin:0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--safelight);cursor:pointer;border:none;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;border-radius:50%;background:var(--safelight);cursor:pointer;border:none;
+  }
+
+  .go-row{display:none;margin-top:30px;align-items:center;gap:18px;}
+  .go-row.show{display:flex;}
+  button.primary{
+    font-family:'Work Sans','Noto Sans Thai',sans-serif;
+    background:var(--ink);color:var(--paper-light);border:none;
+    padding:14px 26px;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:0.01em;
+  }
+  button.primary:hover{background:var(--safelight);}
+  button.primary:disabled{background:var(--film);cursor:default;}
+  .go-note{font-size:13px;color:var(--film);}
+
+  .progress-wrap{display:none;margin-top:30px;}
+  .progress-wrap.show{display:block;}
+  .progress-label{display:flex;justify-content:space-between;font-size:13px;color:var(--film);margin-bottom:8px;}
+  .progress-track{height:2px;background:var(--film-line);position:relative;}
+  .progress-fill{height:100%;background:var(--safelight);width:0%;transition:width 0.2s ease;}
+
+  .results{display:none;margin-top:56px;}
+  .results.show{display:block;}
+  .results-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    margin-bottom:24px;
+  }
+  .results-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:24px;margin:0;}
+  .results-head .count{font-size:13px;color:var(--film);}
+  button.ghost{
+    font-family:'Work Sans','Noto Sans Thai',sans-serif;
+    background:none;border:1px solid var(--ink);color:var(--ink);
+    padding:10px 18px;font-size:14px;cursor:pointer;
+  }
+  button.ghost:hover{background:var(--ink);color:var(--paper-light);}
+
+  .sheet{
+    background:var(--film);padding:14px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px;
+  }
+  .frame{
+    background:var(--ink);position:relative;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .frame img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover;background:#111;}
+  .frame .tag{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:7px 9px;background:var(--ink);
+  }
+  .frame .tag span{font-family:'Work Sans',monospace;font-size:11px;color:#D9D6C9;letter-spacing:0.03em;}
+  .frame .tag a{color:var(--safelight-dim);}
+  .frame .tag a svg{width:15px;height:15px;display:block;}
+  .frame .tag a:hover{color:var(--paper-light);}
+
+  footer.note{
+    margin-top:64px;padding-top:22px;border-top:1px solid var(--film-line);
+    font-size:13px;color:var(--film);max-width:34em;
+  }
+
+  @media (max-width:560px){
+    .wrap{padding:0 18px 90px;}
+    .dropzone{padding:32px 18px;}
+    .sheet{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site">
+    <div class="mark">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="4" width="30" height="24" stroke="currentColor" stroke-width="1.4"/>
+        <circle cx="5.5" cy="8" r="1.1" fill="currentColor"/><circle cx="5.5" cy="24" r="1.1" fill="currentColor"/>
+        <circle cx="11.5" cy="8" r="1.1" fill="currentColor"/><circle cx="11.5" cy="24" r="1.1" fill="currentColor"/>
+        <circle cx="20.5" cy="8" r="1.1" fill="currentColor"/><circle cx="20.5" cy="24" r="1.1" fill="currentColor"/>
+        <circle cx="26.5" cy="8" r="1.1" fill="currentColor"/><circle cx="26.5" cy="24" r="1.1" fill="currentColor"/>
+      </svg>
+      <div><span>PDF / JPEG</span><small>แยกหน้า · ในเบราว์เซอร์ของคุณ</small></div>
+    </div>
+    <div class="frame-counter" id="topCounter"></div>
+  </header>
+
+  <section class="hero">
+    <h1>ทุกหน้าคือหนึ่งภาพ</h1>
+    <p>วาง PDF ของคุณลงที่นี่ แล้วเราจะแยกทุกหน้าออกมาเป็นไฟล์ JPEG ให้ทีละภาพ ประมวลผลทั้งหมดในเครื่องคุณ ไม่มีการอัปโหลดไฟล์ขึ้นเซิร์ฟเวอร์ใดๆ</p>
+
+    <div class="dropzone" id="dropzone">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      <h2>ลากไฟล์ PDF มาวาง หรือคลิกเพื่อเลือกไฟล์</h2>
+      <p>รองรับไฟล์ PDF หนึ่งไฟล์ต่อครั้ง</p>
+      <input type="file" id="fileInput" accept="application/pdf">
+    </div>
+
+    <div class="filename-row" id="filenameRow">
+      <span class="fn" id="fileNameText"></span>
+      <button class="clear" id="clearFile">เลือกไฟล์ใหม่</button>
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="control">
+        <label>ความละเอียด <b id="scaleOut">2×</b></label>
+        <input type="range" id="scaleRange" min="1" max="4" step="1" value="2">
+      </div>
+      <div class="control">
+        <label>คุณภาพ JPEG <b id="qualityOut">85%</b></label>
+        <input type="range" id="qualityRange" min="40" max="100" step="5" value="85">
+      </div>
+    </div>
+
+    <div class="go-row" id="goRow">
+      <button class="primary" id="convertBtn">แปลงเป็นภาพ</button>
+      <span class="go-note" id="pageCountNote"></span>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label"><span>กำลังแยกหน้า</span><span id="progressText">0 / 0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </section>
+
+  <section class="results" id="results">
+    <div class="results-head">
+      <div>
+        <h2>ภาพที่ได้</h2>
+        <div class="count" id="resultCount"></div>
+      </div>
+      <button class="ghost" id="downloadAll">ดาวน์โหลดทั้งหมด (ZIP)</button>
+    </div>
+    <div class="sheet" id="sheet"></div>
+  </section>
+
+  <footer class="note">
+    ไฟล์ของคุณไม่ถูกส่งออกจากเครื่อง — pdf.js แปลงทุกหน้าเป็น canvas แล้วบันทึกเป็น JPEG โดยตรงในเบราว์เซอร์
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const filenameRow = document.getElementById('filenameRow');
+const fileNameText = document.getElementById('fileNameText');
+const clearFile = document.getElementById('clearFile');
+const controls = document.getElementById('controls');
+const goRow = document.getElementById('goRow');
+const convertBtn = document.getElementById('convertBtn');
+const pageCountNote = document.getElementById('pageCountNote');
+const scaleRange = document.getElementById('scaleRange');
+const scaleOut = document.getElementById('scaleOut');
+const qualityRange = document.getElementById('qualityRange');
+const qualityOut = document.getElementById('qualityOut');
+const progressWrap = document.getElementById('progressWrap');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const results = document.getElementById('results');
+const resultCount = document.getElementById('resultCount');
+const sheet = document.getElementById('sheet');
+const downloadAll = document.getElementById('downloadAll');
+const topCounter = document.getElementById('topCounter');
+
+let currentFile = null;
+let currentPdf = null;
+let baseName = 'document';
+let images = [];
+
+scaleRange.addEventListener('input', () => scaleOut.textContent = scaleRange.value + '×');
+qualityRange.addEventListener('input', () => qualityOut.textContent = qualityRange.value + '%');
+
+['dragover','dragenter'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+clearFile.addEventListener('click', resetAll);
+
+async function handleFile(file){
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    alert('กรุณาเลือกไฟล์ PDF เท่านั้น');
+    return;
+  }
+  currentFile = file;
+  baseName = file.name.replace(/\.pdf$/i, '') || 'document';
+  fileNameText.textContent = file.name;
+  filenameRow.classList.add('show');
+  controls.classList.add('show');
+  goRow.classList.add('show');
+  results.classList.remove('show');
+  progressWrap.classList.remove('show');
+  sheet.innerHTML = '';
+  images = [];
+  topCounter.textContent = '';
+
+  try {
+    if (typeof pdfjsLib === 'undefined') {
+      throw new Error('โหลดไลบรารีอ่าน PDF ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่');
+    }
+    const buf = await file.arrayBuffer();
+    currentPdf = await pdfjsLib.getDocument({data: buf}).promise;
+    pageCountNote.textContent = currentPdf.numPages + ' หน้า';
+    topCounter.textContent = currentPdf.numPages + ' หน้า';
+  } catch (err) {
+    console.error(err);
+    currentPdf = null;
+    pageCountNote.textContent = '';
+    topCounter.textContent = '';
+    alert('เปิดไฟล์ PDF นี้ไม่สำเร็จ: ' + (err && err.message ? err.message : 'ไฟล์อาจเสียหายหรือมีการป้องกันด้วยรหัสผ่าน'));
+  }
+}
+
+function resetAll(){
+  currentFile = null; currentPdf = null; images = [];
+  fileInput.value = '';
+  filenameRow.classList.remove('show');
+  controls.classList.remove('show');
+  goRow.classList.remove('show');
+  progressWrap.classList.remove('show');
+  results.classList.remove('show');
+  sheet.innerHTML = '';
+  topCounter.textContent = '';
+}
+
+convertBtn.addEventListener('click', async () => {
+  if (!currentPdf) return;
+  convertBtn.disabled = true;
+  progressWrap.classList.add('show');
+  results.classList.remove('show');
+  sheet.innerHTML = '';
+  images = [];
+
+  const scale = parseInt(scaleRange.value, 10);
+  const quality = parseInt(qualityRange.value, 10) / 100;
+  const total = currentPdf.numPages;
+
+  try {
+    for (let i = 1; i <= total; i++) {
+      progressText.textContent = i + ' / ' + total;
+      progressFill.style.width = Math.round(((i-1)/total)*100) + '%';
+
+      const page = await currentPdf.getPage(i);
+      const viewport = page.getViewport({scale});
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({canvasContext: ctx, viewport}).promise;
+
+      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+      const url = URL.createObjectURL(blob);
+      const num = String(i).padStart(String(total).length, '0');
+      const name = baseName + '-page-' + num + '.jpg';
+      images.push({name, blob, url, page: i});
+
+      progressFill.style.width = Math.round((i/total)*100) + '%';
+    }
+    progressText.textContent = total + ' / ' + total;
+    renderResults();
+  } catch (err) {
+    console.error(err);
+    alert('เกิดข้อผิดพลาดระหว่างแปลงไฟล์: ' + (err && err.message ? err.message : 'ลองใหม่อีกครั้ง'));
+  } finally {
+    convertBtn.disabled = false;
+  }
+});
+
+function renderResults(){
+  sheet.innerHTML = '';
+  images.forEach(img => {
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+    const image = document.createElement('img');
+    image.src = img.url;
+    image.alt = 'หน้า ' + img.page;
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    const span = document.createElement('span');
+    span.textContent = String(img.page).padStart(2,'0');
+    const a = document.createElement('a');
+    a.href = img.url; a.download = img.name; a.title = 'ดาวน์โหลด';
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 17v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>';
+    tag.appendChild(span); tag.appendChild(a);
+    frame.appendChild(image); frame.appendChild(tag);
+    sheet.appendChild(frame);
+  });
+  resultCount.textContent = images.length + ' ภาพ · JPEG';
+  results.classList.add('show');
+  results.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+downloadAll.addEventListener('click', async () => {
+  if (!images.length) return;
+  downloadAll.disabled = true;
+  downloadAll.textContent = 'กำลังบีบอัด...';
+  const zip = new JSZip();
+  images.forEach(img => zip.file(img.name, img.blob));
+  const content = await zip.generateAsync({type:'blob'});
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url; a.download = baseName + '-jpeg.zip';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  downloadAll.disabled = false;
+  downloadAll.textContent = 'ดาวน์โหลดทั้งหมด (ZIP)';
+});
+</script>
+</body>
+</html>
