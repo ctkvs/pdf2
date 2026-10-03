@@ -6,160 +6,162 @@
 <title>PDF เป็นภาพ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;600&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chonburi&family=Itim&family=Kanit:wght@700&family=Mali:wght@400;600&family=Mitr:wght@500&family=Noto+Sans+Thai:wght@400;600&family=Pridi:wght@600&family=Sriracha&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#FBF6EA; --panel:#FFFDF7; --ink:#4A3F3A; --mute:#8C7F75; --line:rgba(74,63,58,.16);
-  --c1:#F2728C; --c2:#F7A541; --c3:#8CC152; --c4:#5AA9E6; --c5:#A98BDB;
+  --bg:#F1E6CC; --panel:#FBF4E2; --ink:#2B2118; --mute:#7A6A56; --sh:rgba(43,33,24,.28);
+  --red:#D9472B; --mus:#F0B429; --teal:#2F8F83; --navy:#243B55; --pink:#EDA6A0; --cream:#FBF4E2;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#1F1D1B; --panel:#2A2724; --ink:#F4EBDD; --mute:#AEA395; --line:rgba(244,235,221,.16);
-  --c1:#FF86A0; --c2:#FFB95C; --c3:#A5D96B; --c4:#74BFF5; --c5:#BFA2EE;}}
-:root[data-theme="dark"]{
-  --bg:#1F1D1B; --panel:#2A2724; --ink:#F4EBDD; --mute:#AEA395; --line:rgba(244,235,221,.16);
-  --c1:#FF86A0; --c2:#FFB95C; --c3:#A5D96B; --c4:#74BFF5; --c5:#BFA2EE;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2B2520;--panel:#3A322B;--ink:#F1E6CC;--mute:#BFB29A;--sh:rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#2B2520;--panel:#3A322B;--ink:#F1E6CC;--mute:#BFB29A;--sh:rgba(0,0,0,.5)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;color:var(--ink);font-family:'Mali','Noto Sans Thai',sans-serif;line-height:1.7;
-  background-color:var(--bg);background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 30px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Mali','Noto Sans Thai',sans-serif;line-height:1.7;position:relative;overflow-x:hidden}
+/* halftone corners */
+body::before,body::after{content:"";position:fixed;width:360px;height:360px;border-radius:50%;pointer-events:none;z-index:-1;opacity:.5;
+  -webkit-mask-image:radial-gradient(circle,#000 0,transparent 70%);mask-image:radial-gradient(circle,#000 0,transparent 70%)}
+body::before{top:-130px;right:-130px;background:radial-gradient(circle,var(--red) 2.2px,transparent 2.6px) 0 0/10px 10px}
+body::after{bottom:-130px;left:-130px;background:radial-gradient(circle,var(--teal) 2.2px,transparent 2.6px) 0 0/10px 10px}
 button,input{font:inherit;color:inherit}
-:focus-visible{outline:3px dashed var(--c4);outline-offset:3px}
-.hand{border:2.5px solid var(--ink);border-radius:255px 14px 225px 14px/14px 225px 14px 255px}
-.wrap{max-width:960px;margin:0 auto;padding:22px 24px 100px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
-.logo{display:flex;gap:5px;align-items:flex-start}
-.logo i{display:block;width:11px;height:30px;clip-path:polygon(0 0,100% 0,100% 78%,50% 100%,0 78%)}
-.logo i:nth-child(1){background:var(--c1)}.logo i:nth-child(2){background:var(--c2)}.logo i:nth-child(3){background:var(--c3)}
-.logo i:nth-child(4){background:var(--c4)}.logo i:nth-child(5){background:var(--c5)}
-.theme{background:var(--panel);padding:5px 16px;cursor:pointer;font-size:14px}
-.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:34px}
-.hero>div{flex:1;min-width:270px}
-h1{font-family:'Itim','Noto Sans Thai',sans-serif;font-weight:400;font-size:clamp(40px,8vw,72px);line-height:1.15;margin:0 0 10px;
-  display:inline;background:repeating-linear-gradient(-55deg,var(--c2) 0 2px,transparent 2px 6px) 0 90%/100% 38% no-repeat}
-.lead{color:var(--mute);max-width:32em;margin:18px 0 0;font-size:16px}
-.mascot{width:min(220px,50%);flex:none;overflow:visible}
-.mascot *{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.bob{animation:bob 3.2s ease-in-out infinite;transform-origin:center}
-@keyframes bob{50%{transform:rotate(-4deg) translateY(-4px)}}
-.drop{position:relative;padding:34px 24px;text-align:center;cursor:pointer;background:var(--panel);border-style:dashed;transition:background .15s}
-.drop.drag,.drop:hover{background:color-mix(in srgb,var(--c4) 16%,var(--panel))}
-.drop svg{width:56px;height:56px;margin-bottom:6px}.drop svg *{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-.drop b{display:block;font-size:19px;font-weight:600}.drop span{color:var(--mute);font-size:14px}
-.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
 .hide{display:none!important}
-.file{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 20px;background:var(--panel);margin-top:18px}
-.file strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* torn paper */
+.paper{position:relative;filter:drop-shadow(4px 5px 0 var(--sh))}
+.paper::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--panel);
+  clip-path:polygon(0 1.5%,6% 0,14% 1.2%,23% 0,34% 1%,45% 0,57% 1.3%,68% 0,79% 1%,89% 0,100% 1.4%,99.4% 30%,100% 55%,99.2% 78%,100% 100%,92% 98.8%,82% 100%,70% 98.7%,58% 100%,46% 98.9%,34% 100%,22% 98.8%,11% 100%,0 98.6%,.7% 70%,0 45%,.8% 20%)}
+.wrap{max-width:880px;margin:0 auto;padding:22px 20px 90px}
+/* ransom type */
+.rn{display:inline-block;margin:0;font-weight:400;line-height:1.5}
+.rn>span{display:inline-block;padding:.02em .3em;margin:3px 2px;box-shadow:2px 3px 0 var(--sh);transform:rotate(-3deg);background:var(--red);color:var(--cream);font-family:Chonburi}
+.rn>span:nth-child(6n+2){background:var(--cream);color:var(--navy);font-family:Kanit;font-weight:700;transform:rotate(2deg)}
+.rn>span:nth-child(6n+3){background:var(--mus);color:#2B2118;font-family:Itim;transform:rotate(-1.5deg)}
+.rn>span:nth-child(6n+4){background:var(--navy);color:var(--cream);font-family:Pridi;font-weight:600;transform:rotate(3deg)}
+.rn>span:nth-child(6n+5){background:var(--teal);color:var(--cream);font-family:Mitr;font-weight:500;transform:rotate(-2deg)}
+.rn>span:nth-child(6n+6){background:var(--pink);color:#2B2118;font-family:Sriracha;transform:rotate(1.5deg)}
+h1.rn{font-size:clamp(34px,7vw,58px)}
+h2.rn{font-size:26px}
+.rn.sm{font-size:20px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.theme{background:var(--mus);color:#2B2118;border:none;padding:5px 16px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:3px 3px 0 var(--sh);transform:rotate(1.5deg)}
+.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:30px}
+.hero>div{flex:1;min-width:250px}
+.lead{color:var(--mute);margin:14px 0 0;max-width:30em}
+.mascot{width:min(180px,45%);flex:none;overflow:visible;filter:drop-shadow(4px 5px 0 var(--sh))}
+.bob{animation:bob 3.6s ease-in-out infinite;transform-origin:center}
+@keyframes bob{50%{transform:rotate(-3deg) translateY(-5px)}}
+.drop{padding:40px 24px;text-align:center;cursor:pointer}
+.drop::after{content:"";position:absolute;inset:12px;border:2.5px dashed var(--red);pointer-events:none;transition:background .15s}
+.drop.drag::after,.drop:hover::after{background:color-mix(in srgb,var(--mus) 22%,transparent)}
+.drop .em{font-size:38px;line-height:1.2}
+.drop b{display:block;font-size:18px;font-weight:600}.drop span{color:var(--mute);font-size:14px}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.file{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 26px;margin-top:20px}
+.file>*{position:relative}
+.file strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 .file small{color:var(--mute);display:block}
-.link{background:none;border:none;text-decoration:underline wavy var(--c1);color:var(--mute);cursor:pointer;padding:4px}
-.panel{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:24px 32px;padding:26px 28px;background:var(--panel)}
-.field label,.field .lab{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:6px}
+.link{background:none;border:none;color:var(--red);font-weight:600;cursor:pointer;padding:4px;white-space:nowrap;text-decoration:underline}
+.panel{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px 30px;padding:30px 30px}
+.field label,.field .lab{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:8px}
 .field label b,.field .lab b{color:var(--ink)}
-.seg{display:flex;gap:8px}
-.seg button{flex:1;padding:6px 0;background:var(--panel);cursor:pointer;font-weight:600;border-width:2px}
-.seg button[aria-pressed=true]{background:repeating-linear-gradient(-55deg,var(--c4) 0 2px,var(--panel) 2px 6px)}
-input[type=text],input[type=password]{width:100%;padding:8px 14px;background:var(--bg);border:2px solid var(--ink);border-radius:255px 10px 225px 10px/10px 225px 10px 255px}
-input[type=text]:focus,input[type=password]:focus{border-color:var(--c4);outline:none}
-input[type=text].bad{border-color:var(--c1)}
-input[type=range]{width:100%;accent-color:var(--c1)}
+.seg{display:flex;gap:10px}
+.seg button{flex:1;padding:6px 0;background:var(--bg);border:2px solid var(--ink);cursor:pointer;font-weight:600;transform:rotate(-1deg)}
+.seg button:nth-child(2){transform:rotate(1deg)}
+.seg button[aria-pressed=true]{background:var(--red);color:var(--cream);border-color:var(--red);box-shadow:2px 3px 0 var(--sh)}
+input[type=text],input[type=password]{width:100%;padding:8px 12px;background:var(--bg);border:2px solid var(--ink);border-radius:3px}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--teal);outline:none}
+input[type=text].bad{border-color:var(--red)}
+input[type=range]{width:100%;accent-color:var(--red)}
 .hint{font-size:12px;color:var(--mute);margin-top:4px}
 .go{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:26px}
-.btn{background:repeating-linear-gradient(-55deg,var(--c1) 0 2px,var(--panel) 2px 6px);padding:11px 28px;font-weight:600;font-size:17px;cursor:pointer;transition:transform .15s;color:var(--ink)}
-.btn:hover{transform:rotate(-1.5deg) scale(1.03)}
+.btn{background:var(--red);color:var(--cream);border:none;padding:12px 30px;font-weight:600;font-size:17px;cursor:pointer;box-shadow:4px 5px 0 var(--sh);transform:rotate(-1deg);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:rotate(1deg) translateY(-2px)}
+.btn:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--sh)}
 .btn:disabled{opacity:.45;cursor:default;transform:none}
-.btn.alt{background:repeating-linear-gradient(-55deg,var(--c3) 0 2px,var(--panel) 2px 6px)}
-.ghost{background:var(--panel);padding:7px 16px;cursor:pointer;font-weight:600;border-width:2px}
-.ghost:hover{background:color-mix(in srgb,var(--c2) 25%,var(--panel))}
+.btn.alt{background:var(--teal);padding:10px 22px;font-size:15px}
+.ghost{background:var(--mus);color:#2B2118;border:none;padding:8px 18px;cursor:pointer;font-weight:600;box-shadow:3px 4px 0 var(--sh)}
 .ghost:disabled{opacity:.4;cursor:default}
 .prog{margin-top:26px}
 .prog .row{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:8px;gap:12px}
-.bar{height:16px;background:var(--panel);overflow:hidden;border-width:2px;border-radius:99px}
-.bar div{height:100%;width:0;transition:width .2s;background:repeating-linear-gradient(-55deg,var(--c1) 0 2px,var(--c2) 2px 4px,var(--c3) 4px 6px,var(--c4) 6px 8px,var(--c5) 8px 10px)}
-.res{margin-top:54px}
-.rh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:24px}
-.rh h2{margin:0;font-family:'Itim',sans-serif;font-weight:400;font-size:32px}.rh small{color:var(--mute);display:block;font-size:14px}
-.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:26px 20px}
-.card{background:var(--panel);padding:10px 10px 6px;position:relative;transition:transform .15s}
+.bar{height:18px;background:var(--panel);border:2px solid var(--ink);overflow:hidden}
+.bar div{height:100%;width:0;transition:width .2s;background:var(--red)}
+.res{margin-top:56px}
+.rh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:26px}
+.rh small{color:var(--mute);display:block;font-size:14px;margin-top:6px}
+.acts{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:28px 20px}
+.card{background:var(--panel);padding:10px 10px 6px;position:relative;box-shadow:4px 5px 0 var(--sh);transition:transform .15s}
 .card:nth-child(odd){transform:rotate(-1.2deg)}.card:nth-child(even){transform:rotate(1deg)}
 .card:hover{transform:rotate(0) scale(1.03);z-index:1}
-.card::before{content:"";position:absolute;top:-10px;left:50%;width:60px;height:18px;margin-left:-30px;transform:rotate(-4deg);
-  background:repeating-linear-gradient(-55deg,var(--k) 0 2px,transparent 2px 5px);border:1.5px solid var(--k);opacity:.9}
+.card::before{content:"";position:absolute;top:-9px;left:50%;width:56px;height:18px;margin-left:-28px;transform:rotate(-4deg);background:var(--k);opacity:.85}
+.card:nth-child(5n+1){--k:var(--mus)}.card:nth-child(5n+2){--k:var(--pink)}.card:nth-child(5n+3){--k:var(--teal)}.card:nth-child(5n+4){--k:var(--red)}.card:nth-child(5n+5){--k:var(--navy)}
 .card.off{opacity:.45}
-.card img{width:100%;display:block;aspect-ratio:3/4;object-fit:contain;background:#fff;cursor:zoom-in;border:2px solid var(--ink);border-radius:6px}
-.card .meta{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 0;font-size:13px}
+.card img{width:100%;display:block;aspect-ratio:3/4;object-fit:contain;background:#fff;cursor:zoom-in}
+.card .meta{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 2px;font-size:13px}
 .card .meta label{display:flex;gap:8px;align-items:center;cursor:pointer}
-.card .meta input{accent-color:var(--c1);width:16px;height:16px}
+.card .meta input{accent-color:var(--red);width:16px;height:16px}
 .card .meta a{color:var(--ink);display:flex}.card .meta svg{width:20px;height:20px}
-.lb{position:fixed;inset:0;background:rgba(30,25,22,.92);display:flex;align-items:center;justify-content:center;z-index:9;padding:56px 12px}
-.lb img{max-width:100%;max-height:100%;background:#fff;border:4px solid var(--c2);border-radius:8px}
-.lb button{position:absolute;background:var(--panel);border:2px solid var(--ink);width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px}
+.lb{position:fixed;inset:0;background:rgba(30,22,16,.92);display:flex;align-items:center;justify-content:center;z-index:9;padding:56px 12px}
+.lb img{max-width:100%;max-height:100%;background:#fff;border:6px solid var(--cream);box-shadow:6px 8px 0 rgba(0,0,0,.4)}
+.lb button{position:absolute;background:var(--mus);color:#2B2118;border:none;width:44px;height:44px;cursor:pointer;font-size:20px;box-shadow:3px 3px 0 rgba(0,0,0,.4)}
 .lb .x{top:calc(10px + env(safe-area-inset-top,0px));right:12px}.lb .p{left:10px}.lb .n{right:10px}
-.lb .cap{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));color:#F4EBDD;font-size:14px}
-dialog{border:2.5px solid var(--ink);border-radius:255px 14px 225px 14px/14px 225px 14px 255px;background:var(--panel);color:var(--ink);padding:28px;max-width:380px;width:90%}
-dialog::backdrop{background:rgba(0,0,0,.55)}
-dialog h3{margin:0 0 6px;font-family:'Itim',sans-serif;font-weight:400;font-size:22px}
-dialog .err{color:var(--c1);font-size:14px;min-height:22px}
+.lb .cap{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));color:#F1E6CC;font-size:14px}
+dialog{border:2.5px solid var(--ink);background:var(--panel);color:var(--ink);padding:28px;max-width:380px;width:90%;box-shadow:6px 7px 0 var(--sh)}
+dialog::backdrop{background:rgba(30,22,16,.6)}
+dialog h3{margin:0 0 6px;font-family:Chonburi;font-weight:400;font-size:20px}
+dialog .err{color:var(--red);font-size:14px;min-height:22px}
 dialog .acts{justify-content:flex-end;margin-top:12px}
 .note{margin-top:60px;color:var(--mute);font-size:13px;max-width:36em}
-@media(max-width:560px){.wrap{padding:16px 16px 80px}.panel{padding:20px}.grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+@media(max-width:560px){.wrap{padding:16px 16px 80px}.panel{padding:24px 22px}.grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
-    <div class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    <button class="theme hand" id="theme">สลับโหมดสี</button>
+    <div class="rn sm" aria-label="PDF"><span>P</span><span>D</span><span>F</span></div>
+    <button class="theme" id="theme">สลับโหมดสี</button>
   </div>
 
   <div class="hero">
     <div>
-      <h1>ทุกหน้า กลายเป็นภาพ</h1>
-      <p class="lead">วาง PDF แล้วแปลงเป็น JPEG, PNG หรือ WebP เลือกเฉพาะหน้าที่อยากได้ก็ได้ ทำในเครื่องคุณทั้งหมด ไม่มีการอัปโหลดไฟล์</p>
+      <h1 class="rn" aria-label="ทุกหน้า กลายเป็นภาพ"><span>ทุก</span><span>หน้า</span> <span>กลาย</span><span>เป็น</span><span>ภาพ</span></h1>
+      <p class="lead">วาง PDF แล้วแปลงเป็น JPEG หรือ PNG เลือกเฉพาะหน้าที่อยากได้ก็ได้ ทำในเครื่องคุณทั้งหมด ไม่มีการอัปโหลดไฟล์</p>
     </div>
     <svg class="mascot" viewBox="0 0 200 200" aria-hidden="true">
+      <defs><pattern id="ht" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="2.2" fill="#D9472B"/></pattern></defs>
+      <circle cx="104" cy="108" r="78" fill="url(#ht)" opacity=".55"/>
       <g class="bob">
-        <path d="M60 36 L140 36 L140 124 L100 164 L60 124 Z" fill="#F7A541" fill-opacity=".55"/>
-        <path d="M60 36 Q100 14 140 36 L140 52 L60 52 Z" fill="#F2728C" fill-opacity=".7"/>
-        <path d="M60 124 L140 124 L100 164 Z" fill="#FBF6EA"/>
-        <path d="M88 150 L100 164 L112 150 Z" fill="#4A3F3A"/>
-        <circle cx="84" cy="88" r="4" fill="#4A3F3A"/><circle cx="116" cy="88" r="4" fill="#4A3F3A"/>
-        <path d="M92 100 Q100 110 108 100" fill="none"/>
-        <ellipse cx="74" cy="102" rx="7" ry="4" fill="#F2728C" fill-opacity=".6" stroke="none"/>
-        <ellipse cx="126" cy="102" rx="7" ry="4" fill="#F2728C" fill-opacity=".6" stroke="none"/>
+        <path d="M52 30 L96 26 L146 32 L150 78 L146 128 L150 170 L100 174 L54 168 L48 120 L52 76Z" fill="#FBF4E2"/>
+        <path d="M110 28 L150 32 L148 70Z" fill="#F0B429"/>
+        <circle cx="82" cy="98" r="6" fill="#2B2118"/><circle cx="118" cy="98" r="6" fill="#2B2118"/>
+        <path d="M89 115 Q100 126 111 115" fill="none" stroke="#2B2118" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="68" cy="116" r="8" fill="#EDA6A0"/><circle cx="132" cy="116" r="8" fill="#EDA6A0"/>
+        <rect x="70" y="140" width="60" height="9" fill="#2F8F83" transform="rotate(-3 100 144)"/>
       </g>
-      <path d="M160 60 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#F7A541" fill-opacity=".7"/>
-      <path d="M34 150 c-8 -8 -6 -18 2 -18 c4 0 6 3 6 3 c0 0 2 -3 6 -3 c8 0 10 10 2 18 l-8 7z" fill="#F2728C" fill-opacity=".6"/>
-      <path d="M170 140 q8 -8 16 0 q-8 8 -16 0" fill="#5AA9E6" fill-opacity=".5"/>
-      <path d="M26 70 q6 -10 12 0" fill="none"/>
+      <path d="M28 52 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z" fill="#243B55"/>
+      <rect x="160" y="150" width="22" height="22" fill="#D9472B" transform="rotate(14 171 161)"/>
     </svg>
   </div>
 
-  <div class="drop hand" id="drop">
-    <svg viewBox="0 0 56 56" aria-hidden="true">
-      <path d="M14 8 H34 L44 18 V48 H14 Z" fill="#8CC152" fill-opacity=".35"/>
-      <path d="M34 8 V18 H44" fill="none"/>
-      <circle cx="25" cy="31" r="1.8" fill="#4A3F3A"/><circle cx="34" cy="31" r="1.8" fill="#4A3F3A"/>
-      <path d="M26 37 Q29.5 41 33 37" fill="none"/>
-    </svg>
+  <div class="drop paper" id="drop">
+    <div class="em" aria-hidden="true">📄</div>
     <b>วางไฟล์ PDF ที่นี่ หรือแตะเพื่อเลือกไฟล์</b>
     <span>ทีละหนึ่งไฟล์ รองรับไฟล์ที่ใส่รหัสผ่านด้วย</span>
     <input type="file" id="fileInput" accept="application/pdf,.pdf" aria-label="เลือกไฟล์ PDF">
   </div>
 
-  <div class="file hand hide" id="fileRow">
+  <div class="file paper hide" id="fileRow">
     <div style="min-width:0"><strong id="fname"></strong><small id="finfo"></small></div>
     <button class="link" id="clear">เปลี่ยนไฟล์</button>
   </div>
 
-  <div class="panel hand hide" id="panel">
+  <div class="panel paper hide" id="panel">
     <div class="field">
       <div class="lab">รูปแบบไฟล์</div>
       <div class="seg" id="fmt">
-        <button class="hand" aria-pressed="true" data-f="jpeg">JPEG</button>
-        <button class="hand" aria-pressed="false" data-f="png">PNG</button>
-        <button class="hand" aria-pressed="false" data-f="webp">WebP</button>
+        <button aria-pressed="true" data-f="jpeg">JPEG</button>
+        <button aria-pressed="false" data-f="png">PNG</button>
       </div>
       <div class="hint">PNG คมชัดไม่สูญเสียคุณภาพ ไฟล์ใหญ่กว่า</div>
     </div>
@@ -181,22 +183,22 @@ dialog .acts{justify-content:flex-end;margin-top:12px}
   </div>
 
   <div class="go hide" id="goRow">
-    <button class="btn hand" id="convert">แปลงเป็นภาพ</button>
-    <button class="ghost hand hide" id="cancel">ยกเลิก</button>
+    <button class="btn" id="convert">แปลงเป็นภาพ</button>
+    <button class="ghost hide" id="cancel">ยกเลิก</button>
   </div>
 
   <div class="prog hide" id="prog">
     <div class="row"><span id="progLabel">กำลังแปลง</span><span id="progText"></span></div>
-    <div class="bar hand"><div id="fill"></div></div>
+    <div class="bar"><div id="fill"></div></div>
   </div>
 
   <section class="res hide" id="res">
     <div class="rh">
-      <div><h2>ภาพที่ได้</h2><small id="resInfo"></small></div>
+      <div><h2 class="rn" aria-label="ภาพที่ได้"><span>ภาพ</span><span>ที่</span><span>ได้</span></h2><small id="resInfo"></small></div>
       <div class="acts">
-        <button class="ghost hand" id="selAll">เลือกทั้งหมด</button>
-        <button class="ghost hand" id="selNone">ล้างที่เลือก</button>
-        <button class="btn alt hand" id="zip">ดาวน์โหลดที่เลือก (ZIP)</button>
+        <button class="ghost" id="selAll">เลือกทั้งหมด</button>
+        <button class="ghost" id="selNone">ล้างที่เลือก</button>
+        <button class="btn alt" id="zip">ดาวน์โหลดที่เลือก (ZIP)</button>
       </div>
     </div>
     <div class="grid" id="grid"></div>
@@ -218,7 +220,7 @@ dialog .acts{justify-content:flex-end;margin-top:12px}
   <p style="margin:0 0 12px;color:var(--mute);font-size:14px">กรอกรหัสผ่านเพื่อเปิดไฟล์ รหัสจะไม่ถูกส่งออกจากเครื่อง</p>
   <input type="password" id="pwIn" autocomplete="off" aria-label="รหัสผ่าน PDF">
   <div class="err" id="pwErr"></div>
-  <div class="acts"><button class="ghost hand" id="pwNo">ยกเลิก</button><button class="btn hand" id="pwOk" style="padding:7px 20px;font-size:15px">เปิดไฟล์</button></div>
+  <div class="acts"><button class="ghost" id="pwNo">ยกเลิก</button><button class="btn" id="pwOk" style="padding:8px 22px;font-size:15px">เปิดไฟล์</button></div>
 </dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -226,17 +228,15 @@ dialog .acts{justify-content:flex-end;margin-top:12px}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const $=id=>document.getElementById(id);
-const COLORS=['--c1','--c2','--c3','--c4','--c5'];
-const EXT={jpeg:'jpg',png:'png',webp:'webp'};
+const EXT={jpeg:'jpg',png:'png'};
 let pdf=null,base='document',fmt='jpeg',images=[],cancelled=false,lbIdx=0,page1=null;
 
-/* theme */
 $('theme').onclick=()=>{
-  const r=document.documentElement,dark=getComputedStyle(r).getPropertyValue('--bg').trim()==='#1F1D1B';
-  r.setAttribute('data-theme',dark?'light':'dark');
+  const r=document.documentElement;
+  const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  r.dataset.theme=cur==='dark'?'light':'dark';
 };
 
-/* file intake */
 const drop=$('drop');
 ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag')}));
 ['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag')}));
@@ -296,7 +296,6 @@ function clearResults(){
   $('grid').innerHTML='';$('res').classList.add('hide');$('prog').classList.add('hide');
 }
 
-/* options */
 document.querySelectorAll('#fmt button').forEach(b=>b.onclick=()=>{
   fmt=b.dataset.f;
   document.querySelectorAll('#fmt button').forEach(x=>x.setAttribute('aria-pressed',x===b));
@@ -326,12 +325,12 @@ function parseRange(str){
   return{ok:true,list:[...set].sort((x,y)=>x-y)};
 }
 
-/* convert */
 $('cancel').onclick=()=>{cancelled=true};
 $('convert').onclick=async()=>{
   const r=parseRange($('pages').value);
   if(!pdf||!r.ok||!r.list.length){$('pages').focus();return}
   clearResults();cancelled=false;
+  $('progLabel').textContent='กำลังแปลง';
   $('convert').disabled=true;$('cancel').classList.remove('hide');$('prog').classList.remove('hide');
   const scale=+$('scale').value,q=+$('quality').value/100,mime='image/'+fmt,list=r.list,total=list.length;
   const pad=String(pdf.numPages).length;
@@ -357,17 +356,14 @@ $('convert').onclick=async()=>{
     console.error(err);alert('แปลงไม่สำเร็จ: '+(err.message||'ลองใหม่อีกครั้ง'));
   }finally{
     $('convert').disabled=false;$('cancel').classList.add('hide');
-    if(!cancelled)$('progLabel').textContent='เสร็จแล้ว';
   }
 };
-$('convert').addEventListener('click',()=>{$('progLabel').textContent='กำลังแปลง'},true);
 
-/* results */
 const dlIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14"/></svg>';
 function render(){
   const g=$('grid');g.innerHTML='';
   images.forEach((im,i)=>{
-    const card=document.createElement('div');card.className='card hand';card.style.setProperty('--k','var('+COLORS[i%5]+')');
+    const card=document.createElement('div');card.className='card';
     card.innerHTML='<img alt="หน้า '+im.page+'"><div class="meta"><label><input type="checkbox" checked aria-label="เลือกหน้า '+im.page+'">หน้า '+im.page+'</label><a download title="ดาวน์โหลดภาพนี้" aria-label="ดาวน์โหลดหน้า '+im.page+'">'+dlIcon+'</a></div>';
     const img=card.querySelector('img');img.src=im.url;img.onclick=()=>openLb(i);
     const a=card.querySelector('a');a.href=im.url;a.download=im.name;
@@ -396,7 +392,6 @@ $('zip').onclick=async()=>{
   }finally{b.textContent=t;sum()}
 };
 
-/* lightbox */
 function openLb(i){lbIdx=i;showLb();$('lb').classList.remove('hide');$('lbX').focus()}
 function showLb(){const im=images[lbIdx];$('lbImg').src=im.url;$('lbImg').alt='หน้า '+im.page;$('lbCap').textContent='หน้า '+im.page+' ('+(lbIdx+1)+'/'+images.length+')'}
 function step(d){lbIdx=(lbIdx+d+images.length)%images.length;showLb()}
