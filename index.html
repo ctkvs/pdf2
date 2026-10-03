@@ -2,428 +2,411 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF → JPEG — แยกทุกหน้าเป็นภาพ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF เป็นภาพ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;600&family=Noto+Sans+Thai:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#1B1B18;
-    --paper:#EDE9DE;
-    --paper-light:#F8F6EF;
-    --safelight:#9B3320;
-    --safelight-dim:#C7714F;
-    --film:#6E6B62;
-    --film-line:rgba(27,27,24,0.14);
-    --danger:#9B3320;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Work Sans','Noto Sans Thai',sans-serif;
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-  }
-  ::selection{background:var(--safelight);color:var(--paper-light);}
-
-  .wrap{max-width:960px;margin:0 auto;padding:0 28px 120px;}
-
-  header.site{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:26px 0 22px;border-bottom:1px solid var(--film-line);
-    margin-bottom:56px;
-  }
-  .mark{display:flex;align-items:center;gap:10px;}
-  .mark svg{width:30px;height:30px;flex:none;}
-  .mark span{font-family:'Fraunces',serif;font-weight:500;font-size:19px;letter-spacing:0.01em;}
-  .mark small{display:block;font-family:'Work Sans','Noto Sans Thai',sans-serif;font-size:11px;color:var(--film);letter-spacing:0.02em;}
-  .frame-counter{font-family:'Work Sans',sans-serif;font-size:13px;color:var(--film);}
-
-  .hero{padding:8px 0 44px;}
-  .hero h1{
-    font-family:'Fraunces',serif;
-    font-weight:500;
-    font-size:clamp(34px,5vw,52px);
-    line-height:1.08;
-    margin:0 0 20px;
-    max-width:11.5em;
-    letter-spacing:-0.01em;
-  }
-  .hero p{
-    font-size:17px;color:#454339;max-width:34em;margin:0;
-  }
-
-  .dropzone{
-    position:relative;
-    margin-top:44px;
-    border:1.5px solid var(--ink);
-    background:var(--paper-light);
-    padding:40px 32px;
-    display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;
-    cursor:pointer;
-    transition:background 0.15s ease, border-color 0.15s ease;
-  }
-  .dropzone::before,.dropzone::after{
-    content:"";position:absolute;left:0;right:0;height:14px;
-    background-image:radial-gradient(circle,var(--paper) 4px,transparent 4.2px);
-    background-size:26px 14px;background-repeat:repeat-x;background-position:10px center;
-  }
-  .dropzone::before{top:-8px;}
-  .dropzone::after{bottom:-8px;}
-  .dropzone.drag{background:#F2E7DE;border-color:var(--safelight);}
-  .dropzone .dz-icon{width:40px;height:40px;color:var(--safelight);}
-  .dropzone h2{font-family:'Fraunces',serif;font-weight:500;font-size:20px;margin:0;}
-  .dropzone p{margin:0;font-size:14px;color:var(--film);}
-  .dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
-
-  .filename-row{
-    display:none;align-items:center;justify-content:space-between;gap:16px;
-    margin-top:18px;padding:14px 18px;border:1px solid var(--film-line);background:var(--paper-light);
-    font-size:14px;
-  }
-  .filename-row.show{display:flex;}
-  .filename-row .fn{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .filename-row button.clear{
-    background:none;border:none;color:var(--film);cursor:pointer;font-size:13px;
-    text-decoration:underline;padding:0;
-  }
-
-  .controls{
-    display:none;margin-top:36px;gap:32px;flex-wrap:wrap;
-    padding:26px 0;border-top:1px solid var(--film-line);border-bottom:1px solid var(--film-line);
-  }
-  .controls.show{display:flex;}
-  .control{flex:1;min-width:220px;}
-  .control label{display:flex;justify-content:space-between;font-size:13px;color:var(--film);margin-bottom:10px;}
-  .control label b{color:var(--ink);font-weight:500;}
-  input[type=range]{
-    -webkit-appearance:none;appearance:none;width:100%;height:1.5px;background:var(--ink);
-    outline:none;margin:0;
-  }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-    background:var(--safelight);cursor:pointer;border:none;
-  }
-  input[type=range]::-moz-range-thumb{
-    width:15px;height:15px;border-radius:50%;background:var(--safelight);cursor:pointer;border:none;
-  }
-
-  .go-row{display:none;margin-top:30px;align-items:center;gap:18px;}
-  .go-row.show{display:flex;}
-  button.primary{
-    font-family:'Work Sans','Noto Sans Thai',sans-serif;
-    background:var(--ink);color:var(--paper-light);border:none;
-    padding:14px 26px;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:0.01em;
-  }
-  button.primary:hover{background:var(--safelight);}
-  button.primary:disabled{background:var(--film);cursor:default;}
-  .go-note{font-size:13px;color:var(--film);}
-
-  .progress-wrap{display:none;margin-top:30px;}
-  .progress-wrap.show{display:block;}
-  .progress-label{display:flex;justify-content:space-between;font-size:13px;color:var(--film);margin-bottom:8px;}
-  .progress-track{height:2px;background:var(--film-line);position:relative;}
-  .progress-fill{height:100%;background:var(--safelight);width:0%;transition:width 0.2s ease;}
-
-  .results{display:none;margin-top:56px;}
-  .results.show{display:block;}
-  .results-head{
-    display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
-    margin-bottom:24px;
-  }
-  .results-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:24px;margin:0;}
-  .results-head .count{font-size:13px;color:var(--film);}
-  button.ghost{
-    font-family:'Work Sans','Noto Sans Thai',sans-serif;
-    background:none;border:1px solid var(--ink);color:var(--ink);
-    padding:10px 18px;font-size:14px;cursor:pointer;
-  }
-  button.ghost:hover{background:var(--ink);color:var(--paper-light);}
-
-  .sheet{
-    background:var(--film);padding:14px;
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px;
-  }
-  .frame{
-    background:var(--ink);position:relative;overflow:hidden;
-    display:flex;flex-direction:column;
-  }
-  .frame img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover;background:#111;}
-  .frame .tag{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:7px 9px;background:var(--ink);
-  }
-  .frame .tag span{font-family:'Work Sans',monospace;font-size:11px;color:#D9D6C9;letter-spacing:0.03em;}
-  .frame .tag a{color:var(--safelight-dim);}
-  .frame .tag a svg{width:15px;height:15px;display:block;}
-  .frame .tag a:hover{color:var(--paper-light);}
-
-  footer.note{
-    margin-top:64px;padding-top:22px;border-top:1px solid var(--film-line);
-    font-size:13px;color:var(--film);max-width:34em;
-  }
-
-  @media (max-width:560px){
-    .wrap{padding:0 18px 90px;}
-    .dropzone{padding:32px 18px;}
-    .sheet{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
-  }
+:root{
+  --bg:#FBF6EA; --panel:#FFFDF7; --ink:#4A3F3A; --mute:#8C7F75; --line:rgba(74,63,58,.16);
+  --c1:#F2728C; --c2:#F7A541; --c3:#8CC152; --c4:#5AA9E6; --c5:#A98BDB;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1F1D1B; --panel:#2A2724; --ink:#F4EBDD; --mute:#AEA395; --line:rgba(244,235,221,.16);
+  --c1:#FF86A0; --c2:#FFB95C; --c3:#A5D96B; --c4:#74BFF5; --c5:#BFA2EE;}}
+:root[data-theme="dark"]{
+  --bg:#1F1D1B; --panel:#2A2724; --ink:#F4EBDD; --mute:#AEA395; --line:rgba(244,235,221,.16);
+  --c1:#FF86A0; --c2:#FFB95C; --c3:#A5D96B; --c4:#74BFF5; --c5:#BFA2EE;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:'Mali','Noto Sans Thai',sans-serif;line-height:1.7;
+  background-color:var(--bg);background-image:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 30px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px dashed var(--c4);outline-offset:3px}
+.hand{border:2.5px solid var(--ink);border-radius:255px 14px 225px 14px/14px 225px 14px 255px}
+.wrap{max-width:960px;margin:0 auto;padding:22px 24px 100px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+.logo{display:flex;gap:5px;align-items:flex-start}
+.logo i{display:block;width:11px;height:30px;clip-path:polygon(0 0,100% 0,100% 78%,50% 100%,0 78%)}
+.logo i:nth-child(1){background:var(--c1)}.logo i:nth-child(2){background:var(--c2)}.logo i:nth-child(3){background:var(--c3)}
+.logo i:nth-child(4){background:var(--c4)}.logo i:nth-child(5){background:var(--c5)}
+.theme{background:var(--panel);padding:5px 16px;cursor:pointer;font-size:14px}
+.hero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:34px}
+.hero>div{flex:1;min-width:270px}
+h1{font-family:'Itim','Noto Sans Thai',sans-serif;font-weight:400;font-size:clamp(40px,8vw,72px);line-height:1.15;margin:0 0 10px;
+  display:inline;background:repeating-linear-gradient(-55deg,var(--c2) 0 2px,transparent 2px 6px) 0 90%/100% 38% no-repeat}
+.lead{color:var(--mute);max-width:32em;margin:18px 0 0;font-size:16px}
+.mascot{width:min(220px,50%);flex:none;overflow:visible}
+.mascot *{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.bob{animation:bob 3.2s ease-in-out infinite;transform-origin:center}
+@keyframes bob{50%{transform:rotate(-4deg) translateY(-4px)}}
+.drop{position:relative;padding:34px 24px;text-align:center;cursor:pointer;background:var(--panel);border-style:dashed;transition:background .15s}
+.drop.drag,.drop:hover{background:color-mix(in srgb,var(--c4) 16%,var(--panel))}
+.drop svg{width:56px;height:56px;margin-bottom:6px}.drop svg *{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.drop b{display:block;font-size:19px;font-weight:600}.drop span{color:var(--mute);font-size:14px}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.hide{display:none!important}
+.file{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 20px;background:var(--panel);margin-top:18px}
+.file strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file small{color:var(--mute);display:block}
+.link{background:none;border:none;text-decoration:underline wavy var(--c1);color:var(--mute);cursor:pointer;padding:4px}
+.panel{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:24px 32px;padding:26px 28px;background:var(--panel)}
+.field label,.field .lab{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:6px}
+.field label b,.field .lab b{color:var(--ink)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:6px 0;background:var(--panel);cursor:pointer;font-weight:600;border-width:2px}
+.seg button[aria-pressed=true]{background:repeating-linear-gradient(-55deg,var(--c4) 0 2px,var(--panel) 2px 6px)}
+input[type=text],input[type=password]{width:100%;padding:8px 14px;background:var(--bg);border:2px solid var(--ink);border-radius:255px 10px 225px 10px/10px 225px 10px 255px}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--c4);outline:none}
+input[type=text].bad{border-color:var(--c1)}
+input[type=range]{width:100%;accent-color:var(--c1)}
+.hint{font-size:12px;color:var(--mute);margin-top:4px}
+.go{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:26px}
+.btn{background:repeating-linear-gradient(-55deg,var(--c1) 0 2px,var(--panel) 2px 6px);padding:11px 28px;font-weight:600;font-size:17px;cursor:pointer;transition:transform .15s;color:var(--ink)}
+.btn:hover{transform:rotate(-1.5deg) scale(1.03)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.alt{background:repeating-linear-gradient(-55deg,var(--c3) 0 2px,var(--panel) 2px 6px)}
+.ghost{background:var(--panel);padding:7px 16px;cursor:pointer;font-weight:600;border-width:2px}
+.ghost:hover{background:color-mix(in srgb,var(--c2) 25%,var(--panel))}
+.ghost:disabled{opacity:.4;cursor:default}
+.prog{margin-top:26px}
+.prog .row{display:flex;justify-content:space-between;font-size:14px;color:var(--mute);margin-bottom:8px;gap:12px}
+.bar{height:16px;background:var(--panel);overflow:hidden;border-width:2px;border-radius:99px}
+.bar div{height:100%;width:0;transition:width .2s;background:repeating-linear-gradient(-55deg,var(--c1) 0 2px,var(--c2) 2px 4px,var(--c3) 4px 6px,var(--c4) 6px 8px,var(--c5) 8px 10px)}
+.res{margin-top:54px}
+.rh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:24px}
+.rh h2{margin:0;font-family:'Itim',sans-serif;font-weight:400;font-size:32px}.rh small{color:var(--mute);display:block;font-size:14px}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:26px 20px}
+.card{background:var(--panel);padding:10px 10px 6px;position:relative;transition:transform .15s}
+.card:nth-child(odd){transform:rotate(-1.2deg)}.card:nth-child(even){transform:rotate(1deg)}
+.card:hover{transform:rotate(0) scale(1.03);z-index:1}
+.card::before{content:"";position:absolute;top:-10px;left:50%;width:60px;height:18px;margin-left:-30px;transform:rotate(-4deg);
+  background:repeating-linear-gradient(-55deg,var(--k) 0 2px,transparent 2px 5px);border:1.5px solid var(--k);opacity:.9}
+.card.off{opacity:.45}
+.card img{width:100%;display:block;aspect-ratio:3/4;object-fit:contain;background:#fff;cursor:zoom-in;border:2px solid var(--ink);border-radius:6px}
+.card .meta{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 0;font-size:13px}
+.card .meta label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.card .meta input{accent-color:var(--c1);width:16px;height:16px}
+.card .meta a{color:var(--ink);display:flex}.card .meta svg{width:20px;height:20px}
+.lb{position:fixed;inset:0;background:rgba(30,25,22,.92);display:flex;align-items:center;justify-content:center;z-index:9;padding:56px 12px}
+.lb img{max-width:100%;max-height:100%;background:#fff;border:4px solid var(--c2);border-radius:8px}
+.lb button{position:absolute;background:var(--panel);border:2px solid var(--ink);width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px}
+.lb .x{top:calc(10px + env(safe-area-inset-top,0px));right:12px}.lb .p{left:10px}.lb .n{right:10px}
+.lb .cap{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));color:#F4EBDD;font-size:14px}
+dialog{border:2.5px solid var(--ink);border-radius:255px 14px 225px 14px/14px 225px 14px 255px;background:var(--panel);color:var(--ink);padding:28px;max-width:380px;width:90%}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h3{margin:0 0 6px;font-family:'Itim',sans-serif;font-weight:400;font-size:22px}
+dialog .err{color:var(--c1);font-size:14px;min-height:22px}
+dialog .acts{justify-content:flex-end;margin-top:12px}
+.note{margin-top:60px;color:var(--mute);font-size:13px;max-width:36em}
+@media(max-width:560px){.wrap{padding:16px 16px 80px}.panel{padding:20px}.grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="top">
+    <div class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <button class="theme hand" id="theme">สลับโหมดสี</button>
+  </div>
 
-  <header class="site">
-    <div class="mark">
-      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="4" width="30" height="24" stroke="currentColor" stroke-width="1.4"/>
-        <circle cx="5.5" cy="8" r="1.1" fill="currentColor"/><circle cx="5.5" cy="24" r="1.1" fill="currentColor"/>
-        <circle cx="11.5" cy="8" r="1.1" fill="currentColor"/><circle cx="11.5" cy="24" r="1.1" fill="currentColor"/>
-        <circle cx="20.5" cy="8" r="1.1" fill="currentColor"/><circle cx="20.5" cy="24" r="1.1" fill="currentColor"/>
-        <circle cx="26.5" cy="8" r="1.1" fill="currentColor"/><circle cx="26.5" cy="24" r="1.1" fill="currentColor"/>
-      </svg>
-      <div><span>PDF / JPEG</span><small>แยกหน้า · ในเบราว์เซอร์ของคุณ</small></div>
+  <div class="hero">
+    <div>
+      <h1>ทุกหน้า กลายเป็นภาพ</h1>
+      <p class="lead">วาง PDF แล้วแปลงเป็น JPEG, PNG หรือ WebP เลือกเฉพาะหน้าที่อยากได้ก็ได้ ทำในเครื่องคุณทั้งหมด ไม่มีการอัปโหลดไฟล์</p>
     </div>
-    <div class="frame-counter" id="topCounter"></div>
-  </header>
+    <svg class="mascot" viewBox="0 0 200 200" aria-hidden="true">
+      <g class="bob">
+        <path d="M60 36 L140 36 L140 124 L100 164 L60 124 Z" fill="#F7A541" fill-opacity=".55"/>
+        <path d="M60 36 Q100 14 140 36 L140 52 L60 52 Z" fill="#F2728C" fill-opacity=".7"/>
+        <path d="M60 124 L140 124 L100 164 Z" fill="#FBF6EA"/>
+        <path d="M88 150 L100 164 L112 150 Z" fill="#4A3F3A"/>
+        <circle cx="84" cy="88" r="4" fill="#4A3F3A"/><circle cx="116" cy="88" r="4" fill="#4A3F3A"/>
+        <path d="M92 100 Q100 110 108 100" fill="none"/>
+        <ellipse cx="74" cy="102" rx="7" ry="4" fill="#F2728C" fill-opacity=".6" stroke="none"/>
+        <ellipse cx="126" cy="102" rx="7" ry="4" fill="#F2728C" fill-opacity=".6" stroke="none"/>
+      </g>
+      <path d="M160 60 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#F7A541" fill-opacity=".7"/>
+      <path d="M34 150 c-8 -8 -6 -18 2 -18 c4 0 6 3 6 3 c0 0 2 -3 6 -3 c8 0 10 10 2 18 l-8 7z" fill="#F2728C" fill-opacity=".6"/>
+      <path d="M170 140 q8 -8 16 0 q-8 8 -16 0" fill="#5AA9E6" fill-opacity=".5"/>
+      <path d="M26 70 q6 -10 12 0" fill="none"/>
+    </svg>
+  </div>
 
-  <section class="hero">
-    <h1>ทุกหน้าคือหนึ่งภาพ</h1>
-    <p>วาง PDF ของคุณลงที่นี่ แล้วเราจะแยกทุกหน้าออกมาเป็นไฟล์ JPEG ให้ทีละภาพ ประมวลผลทั้งหมดในเครื่องคุณ ไม่มีการอัปโหลดไฟล์ขึ้นเซิร์ฟเวอร์ใดๆ</p>
+  <div class="drop hand" id="drop">
+    <svg viewBox="0 0 56 56" aria-hidden="true">
+      <path d="M14 8 H34 L44 18 V48 H14 Z" fill="#8CC152" fill-opacity=".35"/>
+      <path d="M34 8 V18 H44" fill="none"/>
+      <circle cx="25" cy="31" r="1.8" fill="#4A3F3A"/><circle cx="34" cy="31" r="1.8" fill="#4A3F3A"/>
+      <path d="M26 37 Q29.5 41 33 37" fill="none"/>
+    </svg>
+    <b>วางไฟล์ PDF ที่นี่ หรือแตะเพื่อเลือกไฟล์</b>
+    <span>ทีละหนึ่งไฟล์ รองรับไฟล์ที่ใส่รหัสผ่านด้วย</span>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" aria-label="เลือกไฟล์ PDF">
+  </div>
 
-    <div class="dropzone" id="dropzone">
-      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-      <h2>ลากไฟล์ PDF มาวาง หรือคลิกเพื่อเลือกไฟล์</h2>
-      <p>รองรับไฟล์ PDF หนึ่งไฟล์ต่อครั้ง</p>
-      <input type="file" id="fileInput" accept="application/pdf">
-    </div>
+  <div class="file hand hide" id="fileRow">
+    <div style="min-width:0"><strong id="fname"></strong><small id="finfo"></small></div>
+    <button class="link" id="clear">เปลี่ยนไฟล์</button>
+  </div>
 
-    <div class="filename-row" id="filenameRow">
-      <span class="fn" id="fileNameText"></span>
-      <button class="clear" id="clearFile">เลือกไฟล์ใหม่</button>
-    </div>
-
-    <div class="controls" id="controls">
-      <div class="control">
-        <label>ความละเอียด <b id="scaleOut">2×</b></label>
-        <input type="range" id="scaleRange" min="1" max="4" step="1" value="2">
+  <div class="panel hand hide" id="panel">
+    <div class="field">
+      <div class="lab">รูปแบบไฟล์</div>
+      <div class="seg" id="fmt">
+        <button class="hand" aria-pressed="true" data-f="jpeg">JPEG</button>
+        <button class="hand" aria-pressed="false" data-f="png">PNG</button>
+        <button class="hand" aria-pressed="false" data-f="webp">WebP</button>
       </div>
-      <div class="control">
-        <label>คุณภาพ JPEG <b id="qualityOut">85%</b></label>
-        <input type="range" id="qualityRange" min="40" max="100" step="5" value="85">
+      <div class="hint">PNG คมชัดไม่สูญเสียคุณภาพ ไฟล์ใหญ่กว่า</div>
+    </div>
+    <div class="field">
+      <label for="pages">หน้าที่ต้องการ <b id="pagesTotal"></b></label>
+      <input type="text" id="pages" placeholder="เช่น 1-3, 5, 8-10" autocomplete="off">
+      <div class="hint" id="pagesHint">เว้นว่างไว้เพื่อแปลงทุกหน้า</div>
+    </div>
+    <div class="field">
+      <label for="scale">ความละเอียด <b id="scaleOut"></b></label>
+      <input type="range" id="scale" min="1" max="4" step="0.5" value="2">
+      <div class="hint" id="sizeHint"></div>
+    </div>
+    <div class="field" id="qField">
+      <label for="quality">คุณภาพ <b id="qOut">85%</b></label>
+      <input type="range" id="quality" min="40" max="100" step="5" value="85">
+      <div class="hint">ค่าสูงขึ้น ภาพชัดขึ้นแต่ไฟล์ใหญ่ขึ้น</div>
+    </div>
+  </div>
+
+  <div class="go hide" id="goRow">
+    <button class="btn hand" id="convert">แปลงเป็นภาพ</button>
+    <button class="ghost hand hide" id="cancel">ยกเลิก</button>
+  </div>
+
+  <div class="prog hide" id="prog">
+    <div class="row"><span id="progLabel">กำลังแปลง</span><span id="progText"></span></div>
+    <div class="bar hand"><div id="fill"></div></div>
+  </div>
+
+  <section class="res hide" id="res">
+    <div class="rh">
+      <div><h2>ภาพที่ได้</h2><small id="resInfo"></small></div>
+      <div class="acts">
+        <button class="ghost hand" id="selAll">เลือกทั้งหมด</button>
+        <button class="ghost hand" id="selNone">ล้างที่เลือก</button>
+        <button class="btn alt hand" id="zip">ดาวน์โหลดที่เลือก (ZIP)</button>
       </div>
     </div>
-
-    <div class="go-row" id="goRow">
-      <button class="primary" id="convertBtn">แปลงเป็นภาพ</button>
-      <span class="go-note" id="pageCountNote"></span>
-    </div>
-
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-label"><span>กำลังแยกหน้า</span><span id="progressText">0 / 0</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
+    <div class="grid" id="grid"></div>
   </section>
 
-  <section class="results" id="results">
-    <div class="results-head">
-      <div>
-        <h2>ภาพที่ได้</h2>
-        <div class="count" id="resultCount"></div>
-      </div>
-      <button class="ghost" id="downloadAll">ดาวน์โหลดทั้งหมด (ZIP)</button>
-    </div>
-    <div class="sheet" id="sheet"></div>
-  </section>
-
-  <footer class="note">
-    ไฟล์ของคุณไม่ถูกส่งออกจากเครื่อง — pdf.js แปลงทุกหน้าเป็น canvas แล้วบันทึกเป็น JPEG โดยตรงในเบราว์เซอร์
-  </footer>
-
+  <p class="note">pdf.js วาดแต่ละหน้าลง canvas แล้วบันทึกเป็นภาพในเบราว์เซอร์ของคุณ ไฟล์ไม่ถูกส่งออกจากเครื่อง</p>
 </div>
+
+<div class="lb hide" id="lb" role="dialog" aria-label="ดูภาพขยาย">
+  <button class="x" id="lbX" aria-label="ปิด">✕</button>
+  <button class="p" id="lbP" aria-label="หน้าก่อนหน้า">‹</button>
+  <img id="lbImg" alt="">
+  <button class="n" id="lbN" aria-label="หน้าถัดไป">›</button>
+  <div class="cap" id="lbCap"></div>
+</div>
+
+<dialog id="pwDlg">
+  <h3>ไฟล์นี้ใส่รหัสผ่านไว้</h3>
+  <p style="margin:0 0 12px;color:var(--mute);font-size:14px">กรอกรหัสผ่านเพื่อเปิดไฟล์ รหัสจะไม่ถูกส่งออกจากเครื่อง</p>
+  <input type="password" id="pwIn" autocomplete="off" aria-label="รหัสผ่าน PDF">
+  <div class="err" id="pwErr"></div>
+  <div class="acts"><button class="ghost hand" id="pwNo">ยกเลิก</button><button class="btn hand" id="pwOk" style="padding:7px 20px;font-size:15px">เปิดไฟล์</button></div>
+</dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $=id=>document.getElementById(id);
+const COLORS=['--c1','--c2','--c3','--c4','--c5'];
+const EXT={jpeg:'jpg',png:'png',webp:'webp'};
+let pdf=null,base='document',fmt='jpeg',images=[],cancelled=false,lbIdx=0,page1=null;
 
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-const filenameRow = document.getElementById('filenameRow');
-const fileNameText = document.getElementById('fileNameText');
-const clearFile = document.getElementById('clearFile');
-const controls = document.getElementById('controls');
-const goRow = document.getElementById('goRow');
-const convertBtn = document.getElementById('convertBtn');
-const pageCountNote = document.getElementById('pageCountNote');
-const scaleRange = document.getElementById('scaleRange');
-const scaleOut = document.getElementById('scaleOut');
-const qualityRange = document.getElementById('qualityRange');
-const qualityOut = document.getElementById('qualityOut');
-const progressWrap = document.getElementById('progressWrap');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-const results = document.getElementById('results');
-const resultCount = document.getElementById('resultCount');
-const sheet = document.getElementById('sheet');
-const downloadAll = document.getElementById('downloadAll');
-const topCounter = document.getElementById('topCounter');
+/* theme */
+$('theme').onclick=()=>{
+  const r=document.documentElement,dark=getComputedStyle(r).getPropertyValue('--bg').trim()==='#1F1D1B';
+  r.setAttribute('data-theme',dark?'light':'dark');
+};
 
-let currentFile = null;
-let currentPdf = null;
-let baseName = 'document';
-let images = [];
+/* file intake */
+const drop=$('drop');
+['dragenter','dragover'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)load(f)});
+$('fileInput').onchange=e=>{if(e.target.files[0])load(e.target.files[0])};
+$('clear').onclick=reset;
 
-scaleRange.addEventListener('input', () => scaleOut.textContent = scaleRange.value + '×');
-qualityRange.addEventListener('input', () => qualityOut.textContent = qualityRange.value + '%');
+function askPassword(wrong){
+  return new Promise(res=>{
+    const d=$('pwDlg');$('pwErr').textContent=wrong?'รหัสผ่านไม่ถูกต้อง ลองอีกครั้ง':'';$('pwIn').value='';
+    const done=v=>{$('pwOk').onclick=$('pwNo').onclick=null;d.close();res(v)};
+    $('pwOk').onclick=()=>done($('pwIn').value);
+    $('pwNo').onclick=()=>done(null);
+    $('pwIn').onkeydown=e=>{if(e.key==='Enter')done($('pwIn').value)};
+    d.showModal();$('pwIn').focus();
+  });
+}
 
-['dragover','dragenter'].forEach(ev => dropzone.addEventListener(ev, e => {
-  e.preventDefault(); dropzone.classList.add('drag');
-}));
-['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
-  e.preventDefault(); dropzone.classList.remove('drag');
-}));
-dropzone.addEventListener('drop', e => {
-  const f = e.dataTransfer.files[0];
-  if (f) handleFile(f);
-});
-fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
-});
-clearFile.addEventListener('click', resetAll);
-
-async function handleFile(file){
-  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-    alert('กรุณาเลือกไฟล์ PDF เท่านั้น');
+async function load(file){
+  if(!/pdf$/i.test(file.name)&&file.type!=='application/pdf'){alert('เลือกได้เฉพาะไฟล์ PDF');return}
+  clearResults();
+  try{
+    const buf=await file.arrayBuffer();
+    const task=pdfjsLib.getDocument({data:buf});
+    task.onPassword=async(update,reason)=>{
+      const pw=await askPassword(reason===pdfjsLib.PasswordResponses.INCORRECT_PASSWORD);
+      if(pw===null){task.destroy();return}
+      update(pw);
+    };
+    pdf=await task.promise;
+  }catch(err){
+    pdf=null;
+    if(err&&err.name!=='PasswordException'&&!/destroy/i.test(err.message||''))alert('เปิดไฟล์นี้ไม่สำเร็จ ไฟล์อาจเสียหาย');
     return;
   }
-  currentFile = file;
-  baseName = file.name.replace(/\.pdf$/i, '') || 'document';
-  fileNameText.textContent = file.name;
-  filenameRow.classList.add('show');
-  controls.classList.add('show');
-  goRow.classList.add('show');
-  results.classList.remove('show');
-  progressWrap.classList.remove('show');
-  sheet.innerHTML = '';
-  images = [];
-  topCounter.textContent = '';
-
-  try {
-    if (typeof pdfjsLib === 'undefined') {
-      throw new Error('โหลดไลบรารีอ่าน PDF ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่');
-    }
-    const buf = await file.arrayBuffer();
-    currentPdf = await pdfjsLib.getDocument({data: buf}).promise;
-    pageCountNote.textContent = currentPdf.numPages + ' หน้า';
-    topCounter.textContent = currentPdf.numPages + ' หน้า';
-  } catch (err) {
-    console.error(err);
-    currentPdf = null;
-    pageCountNote.textContent = '';
-    topCounter.textContent = '';
-    alert('เปิดไฟล์ PDF นี้ไม่สำเร็จ: ' + (err && err.message ? err.message : 'ไฟล์อาจเสียหายหรือมีการป้องกันด้วยรหัสผ่าน'));
-  }
+  base=file.name.replace(/\.pdf$/i,'')||'document';
+  page1=await pdf.getPage(1);
+  $('fname').textContent=file.name;
+  $('finfo').textContent=pdf.numPages+' หน้า, '+(file.size/1048576).toFixed(1)+' MB';
+  $('pagesTotal').textContent='(ทั้งหมด '+pdf.numPages+')';
+  $('pages').value='';$('pages').classList.remove('bad');
+  $('pagesHint').textContent='เว้นว่างไว้เพื่อแปลงทุกหน้า';
+  ['fileRow','panel','goRow'].forEach(i=>$(i).classList.remove('hide'));
+  drop.classList.add('hide');
+  updateHints();
 }
 
-function resetAll(){
-  currentFile = null; currentPdf = null; images = [];
-  fileInput.value = '';
-  filenameRow.classList.remove('show');
-  controls.classList.remove('show');
-  goRow.classList.remove('show');
-  progressWrap.classList.remove('show');
-  results.classList.remove('show');
-  sheet.innerHTML = '';
-  topCounter.textContent = '';
+function reset(){
+  if(pdf){pdf.destroy();pdf=null}
+  clearResults();
+  $('fileInput').value='';
+  ['fileRow','panel','goRow','prog'].forEach(i=>$(i).classList.add('hide'));
+  drop.classList.remove('hide');
+}
+function clearResults(){
+  images.forEach(i=>URL.revokeObjectURL(i.url));images=[];
+  $('grid').innerHTML='';$('res').classList.add('hide');$('prog').classList.add('hide');
 }
 
-convertBtn.addEventListener('click', async () => {
-  if (!currentPdf) return;
-  convertBtn.disabled = true;
-  progressWrap.classList.add('show');
-  results.classList.remove('show');
-  sheet.innerHTML = '';
-  images = [];
-
-  const scale = parseInt(scaleRange.value, 10);
-  const quality = parseInt(qualityRange.value, 10) / 100;
-  const total = currentPdf.numPages;
-
-  try {
-    for (let i = 1; i <= total; i++) {
-      progressText.textContent = i + ' / ' + total;
-      progressFill.style.width = Math.round(((i-1)/total)*100) + '%';
-
-      const page = await currentPdf.getPage(i);
-      const viewport = page.getViewport({scale});
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({canvasContext: ctx, viewport}).promise;
-
-      const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
-      const url = URL.createObjectURL(blob);
-      const num = String(i).padStart(String(total).length, '0');
-      const name = baseName + '-page-' + num + '.jpg';
-      images.push({name, blob, url, page: i});
-
-      progressFill.style.width = Math.round((i/total)*100) + '%';
-    }
-    progressText.textContent = total + ' / ' + total;
-    renderResults();
-  } catch (err) {
-    console.error(err);
-    alert('เกิดข้อผิดพลาดระหว่างแปลงไฟล์: ' + (err && err.message ? err.message : 'ลองใหม่อีกครั้ง'));
-  } finally {
-    convertBtn.disabled = false;
-  }
+/* options */
+document.querySelectorAll('#fmt button').forEach(b=>b.onclick=()=>{
+  fmt=b.dataset.f;
+  document.querySelectorAll('#fmt button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('qField').classList.toggle('hide',fmt==='png');
 });
-
-function renderResults(){
-  sheet.innerHTML = '';
-  images.forEach(img => {
-    const frame = document.createElement('div');
-    frame.className = 'frame';
-    const image = document.createElement('img');
-    image.src = img.url;
-    image.alt = 'หน้า ' + img.page;
-    const tag = document.createElement('div');
-    tag.className = 'tag';
-    const span = document.createElement('span');
-    span.textContent = String(img.page).padStart(2,'0');
-    const a = document.createElement('a');
-    a.href = img.url; a.download = img.name; a.title = 'ดาวน์โหลด';
-    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 17v1a2 2 0 002 2h10a2 2 0 002-2v-1"/></svg>';
-    tag.appendChild(span); tag.appendChild(a);
-    frame.appendChild(image); frame.appendChild(tag);
-    sheet.appendChild(frame);
-  });
-  resultCount.textContent = images.length + ' ภาพ · JPEG';
-  results.classList.add('show');
-  results.scrollIntoView({behavior:'smooth', block:'start'});
+$('quality').oninput=()=>$('qOut').textContent=$('quality').value+'%';
+$('scale').oninput=updateHints;
+$('pages').oninput=()=>{updateHints()};
+function updateHints(){
+  const s=+$('scale').value;$('scaleOut').textContent=s+'×';
+  if(page1){const v=page1.getViewport({scale:s});$('sizeHint').textContent='ประมาณ '+Math.round(v.width)+' × '+Math.round(v.height)+' พิกเซลต่อหน้า'}
+  const r=parseRange($('pages').value);
+  $('pages').classList.toggle('bad',!r.ok);
+  if(pdf)$('pagesHint').textContent=!r.ok?r.msg:($('pages').value.trim()?'จะแปลง '+r.list.length+' หน้า':'เว้นว่างไว้เพื่อแปลงทุกหน้า');
+}
+function parseRange(str){
+  const n=pdf?pdf.numPages:0,s=str.trim();
+  if(!s)return{ok:true,list:Array.from({length:n},(_,i)=>i+1)};
+  const set=new Set();
+  for(const part of s.split(/[,\s]+/).filter(Boolean)){
+    const m=part.match(/^(\d+)(?:-(\d+))?$/);
+    if(!m)return{ok:false,msg:'รูปแบบไม่ถูกต้อง ใช้ตัวเลข ขีด และจุลภาค เช่น 1-3, 5'};
+    let a=+m[1],b=m[2]?+m[2]:a;if(a>b)[a,b]=[b,a];
+    if(a<1||b>n)return{ok:false,msg:'หน้าต้องอยู่ระหว่าง 1 ถึง '+n};
+    for(let i=a;i<=b;i++)set.add(i);
+  }
+  return{ok:true,list:[...set].sort((x,y)=>x-y)};
 }
 
-downloadAll.addEventListener('click', async () => {
-  if (!images.length) return;
-  downloadAll.disabled = true;
-  downloadAll.textContent = 'กำลังบีบอัด...';
-  const zip = new JSZip();
-  images.forEach(img => zip.file(img.name, img.blob));
-  const content = await zip.generateAsync({type:'blob'});
-  const url = URL.createObjectURL(content);
-  const a = document.createElement('a');
-  a.href = url; a.download = baseName + '-jpeg.zip';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  downloadAll.disabled = false;
-  downloadAll.textContent = 'ดาวน์โหลดทั้งหมด (ZIP)';
+/* convert */
+$('cancel').onclick=()=>{cancelled=true};
+$('convert').onclick=async()=>{
+  const r=parseRange($('pages').value);
+  if(!pdf||!r.ok||!r.list.length){$('pages').focus();return}
+  clearResults();cancelled=false;
+  $('convert').disabled=true;$('cancel').classList.remove('hide');$('prog').classList.remove('hide');
+  const scale=+$('scale').value,q=+$('quality').value/100,mime='image/'+fmt,list=r.list,total=list.length;
+  const pad=String(pdf.numPages).length;
+  try{
+    for(let k=0;k<total;k++){
+      if(cancelled)break;
+      const p=list[k];
+      $('progText').textContent=(k+1)+' / '+total+' (หน้า '+p+')';
+      $('fill').style.width=Math.round(k/total*100)+'%';
+      const pg=await pdf.getPage(p),vp=pg.getViewport({scale});
+      const c=document.createElement('canvas');c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);
+      const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+      await pg.render({canvasContext:ctx,viewport:vp}).promise;
+      const blob=await new Promise(res=>c.toBlob(res,mime,q));
+      c.width=c.height=0;pg.cleanup();
+      if(!blob)throw new Error('เบราว์เซอร์นี้ไม่รองรับรูปแบบ '+fmt.toUpperCase());
+      images.push({page:p,blob,url:URL.createObjectURL(blob),name:base+'-page-'+String(p).padStart(pad,'0')+'.'+EXT[fmt],on:true});
+    }
+    $('fill').style.width='100%';
+    if(images.length)render();
+    $('progLabel').textContent=cancelled?'ยกเลิกแล้ว':'เสร็จแล้ว';
+  }catch(err){
+    console.error(err);alert('แปลงไม่สำเร็จ: '+(err.message||'ลองใหม่อีกครั้ง'));
+  }finally{
+    $('convert').disabled=false;$('cancel').classList.add('hide');
+    if(!cancelled)$('progLabel').textContent='เสร็จแล้ว';
+  }
+};
+$('convert').addEventListener('click',()=>{$('progLabel').textContent='กำลังแปลง'},true);
+
+/* results */
+const dlIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v10m0 0l-3.5-3.5M12 14l3.5-3.5M5 18h14"/></svg>';
+function render(){
+  const g=$('grid');g.innerHTML='';
+  images.forEach((im,i)=>{
+    const card=document.createElement('div');card.className='card hand';card.style.setProperty('--k','var('+COLORS[i%5]+')');
+    card.innerHTML='<img alt="หน้า '+im.page+'"><div class="meta"><label><input type="checkbox" checked aria-label="เลือกหน้า '+im.page+'">หน้า '+im.page+'</label><a download title="ดาวน์โหลดภาพนี้" aria-label="ดาวน์โหลดหน้า '+im.page+'">'+dlIcon+'</a></div>';
+    const img=card.querySelector('img');img.src=im.url;img.onclick=()=>openLb(i);
+    const a=card.querySelector('a');a.href=im.url;a.download=im.name;
+    card.querySelector('input').onchange=e=>{im.on=e.target.checked;card.classList.toggle('off',!im.on);sum()};
+    im.el=card;g.appendChild(card);
+  });
+  $('res').classList.remove('hide');sum();
+  $('res').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function sum(){
+  const sel=images.filter(i=>i.on),bytes=sel.reduce((a,i)=>a+i.blob.size,0);
+  $('resInfo').textContent='เลือก '+sel.length+' จาก '+images.length+' ภาพ ขนาดรวม '+(bytes/1048576).toFixed(1)+' MB';
+  $('zip').disabled=!sel.length;
+}
+function setAll(v){images.forEach(i=>{i.on=v;i.el.classList.toggle('off',!v);i.el.querySelector('input').checked=v});sum()}
+$('selAll').onclick=()=>setAll(true);$('selNone').onclick=()=>setAll(false);
+$('zip').onclick=async()=>{
+  const sel=images.filter(i=>i.on);if(!sel.length)return;
+  const b=$('zip');b.disabled=true;const t=b.textContent;b.textContent='กำลังบีบอัด...';
+  try{
+    const z=new JSZip();sel.forEach(i=>z.file(i.name,i.blob));
+    const out=await z.generateAsync({type:'blob'});
+    const u=URL.createObjectURL(out),a=document.createElement('a');
+    a.href=u;a.download=base+'-images.zip';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),2000);
+  }finally{b.textContent=t;sum()}
+};
+
+/* lightbox */
+function openLb(i){lbIdx=i;showLb();$('lb').classList.remove('hide');$('lbX').focus()}
+function showLb(){const im=images[lbIdx];$('lbImg').src=im.url;$('lbImg').alt='หน้า '+im.page;$('lbCap').textContent='หน้า '+im.page+' ('+(lbIdx+1)+'/'+images.length+')'}
+function step(d){lbIdx=(lbIdx+d+images.length)%images.length;showLb()}
+$('lbX').onclick=()=>$('lb').classList.add('hide');
+$('lbP').onclick=()=>step(-1);$('lbN').onclick=()=>step(1);
+$('lb').onclick=e=>{if(e.target===$('lb'))$('lb').classList.add('hide')};
+document.addEventListener('keydown',e=>{
+  if($('lb').classList.contains('hide'))return;
+  if(e.key==='Escape')$('lb').classList.add('hide');
+  if(e.key==='ArrowLeft')step(-1);if(e.key==='ArrowRight')step(1);
 });
 </script>
 </body>
